@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: coffeeshop
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: web
+        image: 522569276716.dkr.ecr.us-east-1.amazonaws.com/coffeeshop-web:latest
+        ports:
+        - containerPort: 8888
+        env:
+        - name: REVERSE_PROXY_URL
+          valueFrom:
+            configMapKeyRef:
+              name: coffeeshop-config
+              key: REVERSE_PROXY_URL
+        - name: WEB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: coffeeshop-config
+              key: WEB_PORT
+        resources:
+          limits:
+            cpu: "200m"
+            memory: "256Mi"
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8888
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8888
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: coffeeshop
+spec:
+  selector:
+    app: web
+  ports:
+  - port: 8888
+    targetPort: 8888
+  type: LoadBalancer

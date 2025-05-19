@@ -1,0 +1,96 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.11-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  product:
+    image: 522569276716.dkr.ecr.us-east-1.amazonaws.com/coffeeshop-product:latest
+    platform: linux/amd64
+    environment:
+      APP_NAME: product
+      PG_URL: "postgres://postgres:postgres123@dev-postgres.csn60yqcik7g.us-east-1.rds.amazonaws.com:5432/coffeeshop"
+      PG_DSN_URL: "host=dev-postgres.csn60yqcik7g.us-east-1.rds.amazonaws.com user=postgres password=postgres123 dbname=coffeeshop sslmode=disable"
+    ports:
+      - "5001:5001"
+  counter:
+    image: 522569276716.dkr.ecr.us-east-1.amazonaws.com/coffeeshop-counter:latest
+    platform: linux/amd64
+    environment:
+      APP_NAME: counter
+      IN_DOCKER: "true"
+      PG_URL: "postgres://postgres:postgres123@dev-postgres.csn60yqcik7g.us-east-1.rds.amazonaws.com:5432/coffeeshop"
+      PG_DSN_URL: "host=dev-postgres.csn60yqcik7g.us-east-1.rds.amazonaws.com user=postgres password=postgres123 dbname=coffeeshop sslmode=disable"
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
+      PRODUCT_CLIENT_URL: "product:5001"
+    ports:
+      - "5002:5002"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+  barista:
+    image: 522569276716.dkr.ecr.us-east-1.amazonaws.com/coffeeshop-barista:latest
+    platform: linux/amd64
+    environment:
+      APP_NAME: barista
+      IN_DOCKER: "true"
+      PG_URL: "postgres://postgres:postgres123@dev-postgres.csn60yqcik7g.us-east-1.rds.amazonaws.com:5432/coffeeshop"
+      PG_DSN_URL: "host=dev-postgres.csn60yqcik7g.us-east-1.rds.amazonaws.com user=postgres password=postgres123 dbname=coffeeshop sslmode=disable"
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  kitchen:
+    image: 522569276716.dkr.ecr.us-east-1.amazonaws.com/coffeeshop-kitchen:latest
+    platform: linux/amd64
+    environment:
+      APP_NAME: kitchen
+      IN_DOCKER: "true"
+      PG_URL: "postgres://postgres:postgres123@dev-postgres.csn60yqcik7g.us-east-1.rds.amazonaws.com:5432/coffeeshop"
+      PG_DSN_URL: "host=dev-postgres.csn60yqcik7g.us-east-1.rds.amazonaws.com user=postgres password=postgres123 dbname=coffeeshop sslmode=disable"
+      RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+  proxy:
+    image: 522569276716.dkr.ecr.us-east-1.amazonaws.com/coffeeshop-proxy:latest
+    platform: linux/amd64
+    environment:
+      APP_NAME: proxy
+      GRPC_PRODUCT_HOST: product
+      GRPC_PRODUCT_PORT: 5001
+      GRPC_COUNTER_HOST: counter
+      GRPC_COUNTER_PORT: 5002
+    ports:
+      - "5000:5000"
+    depends_on:
+      - product
+      - counter
+  web:
+    image: 522569276716.dkr.ecr.us-east-1.amazonaws.com/coffeeshop-web:latest
+    platform: linux/amd64
+    environment:
+      REVERSE_PROXY_URL: "http://ec2-54-165-213-103.compute-1.amazonaws.com:5000"
+      WEB_PORT: 8888
+    depends_on:
+      - proxy
+    ports:
+      - "8888:8888"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

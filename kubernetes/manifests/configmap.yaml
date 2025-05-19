@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coffeeshop-config
+  namespace: coffeeshop
+data:
+  IN_DOCKER: "true"
+  WEB_PORT: "8888"
+  GRPC_PRODUCT_HOST: "product"
+  GRPC_PRODUCT_PORT: "5001"
+  GRPC_COUNTER_HOST: "counter"
+  GRPC_COUNTER_PORT: "5002"
+  REVERSE_PROXY_URL: "http://ec2-54-165-213-103.compute-1.amazonaws.com:5000"
