@@ -111,6 +111,27 @@ resource "aws_eks_cluster" "coffeeshop" {
   ]
 }
 
+resource "aws_launch_template" "eks_node" {
+  name = "${var.node_group_name}-launch-template"
+
+  user_data = base64encode(<<-EOT
+  MIME-Version: 1.0
+  Content-Type: multipart/mixed; boundary="==BOUNDARY=="
+
+  --==BOUNDARY==
+  Content-Type: text/x-shellscript; charset="us-ascii"
+
+  #!/bin/bash
+  /etc/eks/bootstrap.sh --apiserver-endpoint ${aws_eks_cluster.coffeeshop.endpoint} \
+    --b64-cluster-ca ${aws_eks_cluster.coffeeshop.certificate_authority[0].data} \
+    ${aws_eks_cluster.coffeeshop.name} \
+    --kubelet-extra-args "--max-pods=29"
+
+  --==BOUNDARY==--
+  EOT
+  )
+}
+
 # EKS Node Group
 resource "aws_eks_node_group" "minimal_nodes" {
   cluster_name    = aws_eks_cluster.coffeeshop.name
@@ -123,6 +144,11 @@ resource "aws_eks_node_group" "minimal_nodes" {
     desired_size = 2
     max_size     = 3
     min_size     = 1
+  }
+
+  launch_template {
+    id      = aws_launch_template.eks_node.id
+    version = "$Latest"
   }
 
   depends_on = [
