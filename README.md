@@ -46,11 +46,35 @@ Production: Access via the domain or endpoint of the LoadBalancer/Ingress (see T
 - 1. Prerequisites
 Install: Terraform, AWS CLI, kubectl, Docker.
 - 2. Deploy Development Environment
+```bash
+#!/bin/bash
+
+# Initialize Terraform
+cd terraform/dev
+terraform init
+
+# Plan and apply
+terraform plan
+terraform apply
 Result: EC2, RDS, and VPC are created. SSH into EC2 to check Docker Compose.
 Push images to ECR:
 SSH into EC2, run Docker Compose:
+```bash
+#!/bin/bash
+ssh -i <your-key.pem> ec2-user@<EC2_PUBLIC_IP>
+docker compose up -d
 - 3. Deploy Production Environment
 Result: EKS, RDS, VPC, IAM, and KMS are created.
+```bash
+#!/bin/bash
+
+# Initialize Terraform
+cd terraform/prod
+terraform init
+
+# Plan and apply
+terraform plan
+terraform apply
 Push images to ECR as above.
 Deploy manifests:
 - 4. Access the Application
