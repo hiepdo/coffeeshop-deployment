@@ -18,7 +18,6 @@
 - **terraform/environments/dev/**: Provisions development infrastructure (VPC, EC2, RDS) on AWS. EC2 runs Docker Compose.
 - **terraform/environments/prod/**: Provisions production infrastructure (VPC, EKS, RDS, IAM, KMS, autoscaling).
 - **terraform/modules/**: Shared modules for VPC, EC2, ECR, RDS, and region configuration.
-- **docker/**: (Optional) Contains Dockerfiles or build scripts for images.
 - **kubernetes/manifests/**: Kubernetes manifests for each service, ingress, autoscaler, network policy, secrets, and configmaps.
 - **push-images.sh**: Script to push Docker images to ECR.
 
@@ -38,17 +37,18 @@ The solution provisions a managed PostgreSQL database using AWS RDS. For enhance
 Development: Access via EC2 public IP, port 8888 (e.g., http://<EC2_PUBLIC_IP>:8888)
 Production: Access via the domain or endpoint of the LoadBalancer/Ingress (see Terraform output or AWS Console).
 
-User Guideline
-1. Prerequisites
+## User Guideline
+###
+- **1. Prerequisites
 Install: Terraform, AWS CLI, kubectl, Docker.
-2. Deploy Development Environment
+- **2. Deploy Development Environment
 Result: EC2, RDS, and VPC are created. SSH into EC2 to check Docker Compose.
 Push images to ECR:
 SSH into EC2, run Docker Compose:
-3. Deploy Production Environment
+- **3. Deploy Production Environment
 Result: EKS, RDS, VPC, IAM, and KMS are created.
 Push images to ECR as above.
 Deploy manifests:
-4. Access the Application
+- **4. Access the Application
 Development: http://<EC2_PUBLIC_IP>:8888
 Production: Check the LoadBalancer/Ingress address in AWS.
