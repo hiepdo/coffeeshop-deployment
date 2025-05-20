@@ -47,8 +47,6 @@ Production: Access via the domain or endpoint of the LoadBalancer/Ingress (see T
 Install: Terraform, AWS CLI, kubectl, Docker.
 - 2. Deploy Development Environment
 ```bash
-#!/bin/bash
-
 # Initialize Terraform
 cd terraform/dev
 terraform init
@@ -66,7 +64,6 @@ docker compose up -d
 - 3. Deploy Production Environment
 Result: EKS, RDS, VPC, IAM, and KMS are created.
 ```bash
-#!/bin/bash
 
 # Initialize Terraform
 cd terraform/prod
