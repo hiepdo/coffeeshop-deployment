@@ -47,11 +47,11 @@ Production: Access via the domain or endpoint of the LoadBalancer/Ingress (see T
 Install: Terraform, AWS CLI, kubectl, Docker.
 - 2. Deploy Development Environment
 
-# Initialize Terraform
+### Initialize Terraform
 `cd terraform/dev`
 `terraform init`
 
-# Plan and apply
+### Plan and apply
 `terraform plan`
 `terraform apply`
 Result: EC2, RDS, and VPC are created. SSH into EC2 to check Docker Compose.
@@ -61,22 +61,22 @@ SSH into EC2, run Docker Compose:
 `docker compose up -d`
 - 3. Deploy Production Environment
 Result: EKS, RDS, VPC, IAM, and KMS are created.
-# Initialize Terraform
+### Initialize Terraform
 `cd terraform/prod`
 `terraform init`
 
-# Plan and apply
+### Plan and apply
 `terraform plan`
 `terraform apply`
 
 Deploy manifests:
 `aws eks --region <region> update-kubeconfig --name <cluster-name>`
 
-# Verify connection
+### Verify connection
 `kubectl get nodes`
 
-# Deploy app manifests
+### Deploy app manifests
 `kubectl apply -f kubernetes/`
-- 4. Access the Application
-Development: http://<EC2_PUBLIC_IP>:8888
-Production: Check the LoadBalancer/Ingress address in AWS.
+### Access the Application
+- Development: http://<EC2_PUBLIC_IP>:8888
+- Production: Check the LoadBalancer/Ingress address in AWS.
